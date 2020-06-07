@@ -1,0 +1,20 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Ignore Gradle build output directory
+build
+
+# Ignore idea folder
+.idea
+*.iml
+*.ipr
+*.iws
+
+# Ignore MAC related files
+.DS_Store
+
+#Ignore Gradle project-specific cache directory
+.gradle
