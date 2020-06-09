@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'java'
+    id 'application'
 }
 
 group 'org.binance.academy'
@@ -16,9 +17,12 @@ dependencies {
     // Spring related dependency
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-security"
 
-    // Mapper library
+    // libs
     implementation "org.mapstruct:mapstruct:1.3.1.Final"
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 
     runtime group: 'com.h2database', name: 'h2', version: '1.3.148'
 
@@ -30,3 +34,5 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
+mainClassName = 'com.binance.cms.BinanceCmsApplication'

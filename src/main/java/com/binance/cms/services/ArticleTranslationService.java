@@ -6,8 +6,7 @@ import com.binance.cms.entities.ArticleTranslationEntity;
 import com.binance.cms.entities.Language;
 import com.binance.cms.exceptions.NotExistException;
 import com.binance.cms.exceptions.PageTranslationExistException;
-import com.binance.cms.respositories.PageRepository;
-import com.binance.cms.respositories.PageTranslationRepository;
+import com.binance.cms.respositories.ArticleTranslationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,42 +15,36 @@ import java.util.Optional;
 
 @Service
 public class ArticleTranslationService {
-    private final PageRepository pageRepository;
-    private final PageTranslationRepository pageTranslationRepository;
+    private final ArticleService articleService;
+    private final ArticleTranslationRepository articleTranslationRepository;
 
     @Autowired
-    public ArticleTranslationService(PageRepository pageRepository, PageTranslationRepository pageTranslationRepository) {
-        this.pageRepository = pageRepository;
-        this.pageTranslationRepository = pageTranslationRepository;
+    public ArticleTranslationService(ArticleService articleService, ArticleTranslationRepository articleTranslationRepository) {
+        this.articleTranslationRepository = articleTranslationRepository;
+        this.articleService = articleService;
     }
 
     public ArticleTranslationEntity getPageTranslationBySlugAndLanguage(String slug, Language language) {
-        final ArticleEntity articleEntity = pageRepository.findBySlug(slug)
+        final ArticleEntity articleEntity = articleService.findBySlug(slug)
                 .orElseThrow(() -> new NotExistException("Slug: "+ slug + " cannot be found"));
 
-        final ArticleTranslationEntity translationEntity = articleEntity.getTranslation().stream()
+        return articleEntity.getTranslation().stream()
                 .filter(pageTranslationEntity -> pageTranslationEntity.getLanguage() == language)
                 .findFirst()
                 .orElseThrow(() -> new NotExistException("Slug: "+ slug + " does not have language: " + language.name() + " translation"));
-
-        return translationEntity;
     }
 
     @Transactional
-    public ArticleTranslationEntity createPgeTranslation(ArticleTranslationRequest articleTranslationRequest) {
+    public ArticleTranslationEntity createPageTranslation(ArticleTranslationRequest articleTranslationRequest) {
         final String slug = articleTranslationRequest.getSlug();
-        final ArticleEntity articleEntity = pageRepository.findBySlug(slug)
-                .orElseGet(() -> {
-                    final ArticleEntity entity = ArticleEntity.builder().slug(slug).build();
-                    return pageRepository.save(entity);
-                });
+        final ArticleEntity articleEntity = articleService.createArticleEntityIfNotExist(slug);
 
         final Optional<ArticleTranslationEntity> optPageTranslationEntity = articleEntity.getTranslation().stream()
                 .filter(entity -> entity.getLanguage() == articleTranslationRequest.getLanguage())
                 .findAny();
 
         if (optPageTranslationEntity.isPresent()) {
-            throw new PageTranslationExistException("Slug " + slug + " already have translation: " + slug);
+            throw new PageTranslationExistException("Slug " + slug + " already have translation for language: " + articleTranslationRequest.getLanguage());
         }
 
         final ArticleTranslationEntity translationEntity =  ArticleTranslationEntity.builder()
@@ -62,12 +55,12 @@ public class ArticleTranslationService {
                 .build();
 
         articleEntity.addTranslation(translationEntity);
-        return pageTranslationRepository.save(translationEntity);
+        return articleTranslationRepository.save(translationEntity);
     }
 
     @Transactional
     public ArticleTranslationEntity updatePageTranslation(String slug, ArticleTranslationRequest articleTranslationRequest) {
-        final ArticleEntity articleEntity = pageRepository.findBySlug(slug)
+        final ArticleEntity articleEntity = articleService.findBySlug(slug)
                 .orElseThrow(() -> new NotExistException("Slug: "+ slug + " cannot be found"));
 
         final Language lang = articleTranslationRequest.getLanguage();
@@ -79,11 +72,11 @@ public class ArticleTranslationService {
         articleTranslationEntity.setContent(articleTranslationRequest.getContent());
         articleTranslationEntity.setTitle(articleTranslationRequest.getTitle());
 
-        return pageTranslationRepository.save(articleTranslationEntity);
+        return articleTranslationRepository.save(articleTranslationEntity);
     }
 
     public void deletePageTranslation(final String slug, final Language lang) {
-        final ArticleEntity articleEntity = pageRepository.findBySlug(slug)
+        final ArticleEntity articleEntity = articleService.findBySlug(slug)
                 .orElseThrow(() -> new NotExistException("Slug: "+ slug + " cannot be found"));
 
         final ArticleTranslationEntity articleTranslationEntity = articleEntity.getTranslation().stream()
@@ -91,6 +84,6 @@ public class ArticleTranslationService {
                 .findAny()
                 .orElseThrow(() -> new NotExistException("No page translation lang: " + lang + " for slug: " + slug));
 
-        pageTranslationRepository.delete(articleTranslationEntity);
+        articleTranslationRepository.delete(articleTranslationEntity);
     }
 }

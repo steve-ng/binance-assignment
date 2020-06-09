@@ -1,13 +1,12 @@
 package com.binance.cms.respositories;
 
 import com.binance.cms.entities.ArticleEntity;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface PageRepository extends CrudRepository<ArticleEntity, String> {
-
+public interface ArticleRepository extends PagingAndSortingRepository<ArticleEntity, String> {
     Optional<ArticleEntity> findBySlug(String slug);
 }

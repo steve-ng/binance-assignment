@@ -11,8 +11,8 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {ZonedDateTimeMapper.class}
 )
-public interface PageTranslationMapper {
+public interface ArticleTranslationMapper {
 
     @Mapping(source = "entity.page.slug", target = "slug")
-    ArticleTranslationResponse pageEntityToResponse(ArticleTranslationEntity entity);
+    ArticleTranslationResponse entityToResponse(ArticleTranslationEntity entity);
 }
